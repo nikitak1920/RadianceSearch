@@ -2,40 +2,75 @@
 //  IngredientTableViewCell.swift
 //  RadianceSearch
 //
-//  Created by admin2 on 15/11/24.
+//  Created by admin2 on 09/03/25.
 //
 
 import UIKit
 
 class IngredientTableViewCell: UITableViewCell {
-    
+
+    @IBOutlet weak var iconImageView: UIImageView!
     @IBOutlet weak var nameLabel: UILabel!
-    @IBOutlet weak var ratingLabel: UILabel!
-    
+    @IBOutlet weak var ratingImageView: UIImageView!
+
     override func awakeFromNib() {
-        super.awakeFromNib()
-        // Initial setup for ratingLabel
-        ratingLabel.layer.cornerRadius = ratingLabel.frame.size.width / 2
-        ratingLabel.layer.masksToBounds = true
-        ratingLabel.textAlignment = .center
-        ratingLabel.textColor = .white
+           super.awakeFromNib()
+           ratingImageView.contentMode = .scaleAspectFit
+           iconImageView.isHidden = false
+       }
+
+       override func prepareForReuse() {
+           super.prepareForReuse()
+           iconImageView.image = nil
+           iconImageView.isHidden = false
+           ratingImageView.image = nil
+           ratingImageView.tintColor = .clear
+       }
+
+    func configureWithIngredient(_ ingredient: Ingredient) {
+        nameLabel.text = ingredient.name
+        iconImageView.image = UIImage(systemName: "flask") // Placeholder icon
+
+        // Ensure riskLevel is properly handled
+        let riskLevel = ingredient.riskLevel.lowercased()
+        ratingImageView.image = imageForRiskLevel(riskLevel)
+        ratingImageView.tintColor = colorForRiskLevel(riskLevel)
+        ratingImageView.isHidden = false
     }
-    
-    func configure(withRating rating: Int) {
-        ratingLabel.text = "\(rating)"
-        ratingLabel.backgroundColor = colorForRating(rating)
-    }
-    
-    private func colorForRating(_ rating: Int) -> UIColor {
-        switch rating {
-        case 0...3:
-            return UIColor.systemGreen // Low risk
-        case 4...7:
-            return UIColor.systemYellow // Medium risk
-        case 8...10:
-            return UIColor.systemRed   // High risk
-        default:
-            return UIColor.systemGray
-        }
-    }
-}
+
+       func configureWithProduct(_ product: Product) {
+           nameLabel.text = product.name
+           iconImageView.image = UIImage(systemName: "cube.box") // Placeholder for product
+
+           // Hide rating for products
+           ratingImageView.isHidden = true
+       }
+
+       // MARK: - Risk Level Helpers
+       private func imageForRiskLevel(_ riskLevel: String) -> UIImage? {
+           switch riskLevel {
+           case "low":
+               return UIImage(systemName: "checkmark.seal.fill") // Green Certified Symbol
+           case "medium":
+               return UIImage(systemName: "exclamationmark.triangle.fill") // Yellow Warning
+           case "high":
+               return UIImage(systemName: "exclamationmark.triangle.fill") // Red Warning
+           default:
+               return nil
+           }
+       }
+
+       private func colorForRiskLevel(_ riskLevel: String) -> UIColor {
+           switch riskLevel {
+           case "low":
+               return UIColor.systemGreen // Green
+           case "medium":
+               return UIColor.systemYellow // Yellow
+           case "high":
+               return UIColor.systemRed // Red
+           default:
+               return UIColor.systemGray // Default Gray
+           }
+       }
+   }
+

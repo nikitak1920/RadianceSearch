@@ -2,90 +2,90 @@
 //  IngredientDetailViewController.swift
 //  RadianceSearch
 //
-//  Created by admin2 on 16/11/24.
+//  Created by admin2 on 09/03/25.
 //
 
 import UIKit
 
+import UIKit
+
 class IngredientDetailViewController: UIViewController {
-    
-    @IBOutlet weak var ingredientImageView: UIImageView!
-    @IBOutlet weak var ingredientNameLabel: UILabel!
+
+    @IBOutlet weak var iconImageView: UIImageView!
+    @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var akaLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var usageLabel: UILabel!
     @IBOutlet weak var healthImpactLabel: UILabel!
     @IBOutlet weak var sourceLinkLabel: UILabel!
-    
-    var ingredientDescription: IngredientDescription?
+
+    var ingredient: Ingredient?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureView()
+        configureUI()
     }
-    
-    private func configureView() {
-        guard let description = ingredientDescription else { return }
+
+    private func configureUI() {
+        guard let ingredient = ingredient else { return }
+
+        titleLabel.text = ingredient.name
+        akaLabel.text = "Also Known As: \(ingredient.aka)"
+        descriptionLabel.text = "Description: \(ingredient.description)"
+        usageLabel.text = "Usage: \(ingredient.usage)"
+        healthImpactLabel.text = "Health Impact: \(ingredient.healthImpact)"
         
-        // Set ingredient details
-        ingredientImageView.image = description.image?.withRenderingMode(.alwaysTemplate)  // Enable tint for the image
-        ingredientNameLabel.text = description.name
-        akaLabel.text = description.aka
-        descriptionLabel.text = description.description
-        usageLabel.text = description.usage
-        healthImpactLabel.text = description.healthImpact
+        // Set icon image based on risk level
+        let riskLevel = ingredient.riskLevel.lowercased()
+        iconImageView.image = imageForRiskLevel(riskLevel)
+        iconImageView.tintColor = colorForRiskLevel(riskLevel)
         
-        // Set source link if available
-        if let sourceLink = description.sourceLink.first {
-            let attributedString = NSMutableAttributedString(string: "Source")
-            attributedString.append(NSAttributedString(string: " - \(sourceLink)", attributes: [.link: sourceLink]))
-            sourceLinkLabel.attributedText = attributedString
+        // Ensure URL is valid
+        if let urlString = ingredient.sourceLink, let _ = URL(string: urlString) {
+            sourceLinkLabel.text = "Source: Tap to open"
+            sourceLinkLabel.textColor = .systemBlue
             sourceLinkLabel.isUserInteractionEnabled = true
+
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openSourceLink))
+            sourceLinkLabel.addGestureRecognizer(tapGesture)
+        } else {
+            sourceLinkLabel.text = "Source: Not available"
+            sourceLinkLabel.textColor = .gray
+            sourceLinkLabel.isUserInteractionEnabled = false
         }
-        
-        // Set the symbol color based on the risk level
-        switch description.riskLevel.lowercased() {
+    }
+
+    private func imageForRiskLevel(_ riskLevel: String) -> UIImage? {
+        switch riskLevel {
         case "low":
-            ingredientImageView.tintColor = UIColor.systemGreen
+            return UIImage(systemName: "checkmark.seal.fill") // Safe ingredient icon
         case "medium":
-            ingredientImageView.tintColor = UIColor.systemYellow
+            return UIImage(systemName: "exclamationmark.triangle.fill") // Moderate warning icon
         case "high":
-            ingredientImageView.tintColor = UIColor.systemRed
+            return UIImage(systemName: "exclamationmark.triangle.fill") // High-risk warning icon
         default:
-            ingredientImageView.tintColor = UIColor.gray  // Default color if risk level is unknown
+            return UIImage(systemName: "questionmark.circle.fill") // Default unknown icon
         }
     }
 
-    
-    /*
-    private func configureView() {
-        guard let description = ingredientDescription else { return }
-        
-        ingredientImageView.image = description.image
-        ingredientNameLabel.text = description.name
-        akaLabel.text = description.aka
-        descriptionLabel.text = description.description
-        usageLabel.text = description.usage
-        healthImpactLabel.text = description.healthImpact
-        
-        if let sourceLink = description.sourceLink.first {
-            let attributedString = NSMutableAttributedString(string: "Source")
-            attributedString.append(NSAttributedString(string: " - \(sourceLink)", attributes: [.link: sourceLink]))
-            sourceLinkLabel.attributedText = attributedString
-            sourceLinkLabel.isUserInteractionEnabled = true
+    private func colorForRiskLevel(_ riskLevel: String) -> UIColor {
+        switch riskLevel {
+        case "low":
+            return UIColor.systemGreen
+        case "medium":
+            return UIColor.systemYellow
+        case "high":
+            return UIColor.systemRed
+        default:
+            return UIColor.gray
         }
     }
-*/
 
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    @objc private func openSourceLink() {
+        if let urlString = ingredient?.sourceLink, let url = URL(string: urlString) {
+            UIApplication.shared.open(url)
+        }
     }
-    */
-
 }
+
+
